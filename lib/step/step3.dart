@@ -1,3 +1,5 @@
+//第3步: 添加一个 有状态的部件（Stateful widget）
+
 import 'package:flutter/material.dart';
 //和大多数语言的导入对应包的操作差不多 使用import
 import 'package:english_words/english_words.dart';
@@ -24,10 +26,12 @@ class MyApp extends StatelessWidget {
           title: new Text('Welcome to Flutter'),
         ),
         body: new Center(
-        //驼峰命名法” (称为 “upper camel case” 或 “Pascal case” ), 表示字符串中的每个单词（包括第一个单词）都以大写字母开头。所以，“uppercamelcase” 变成 “UpperCamelCase”
+          //驼峰命名法” (称为 “upper camel case” 或 “Pascal case” ), 表示字符串中的每个单词（包括第一个单词）都以大写字母开头。所以，“uppercamelcase” 变成 “UpperCamelCase”
+          //child: new Text('Hello World'),
           child: new Text(wordPair.asPascalCase),
         ),
       ),
     );
   }
 }
+
