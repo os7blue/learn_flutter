@@ -1,4 +1,4 @@
-//第一步 创建一个flutter app
+//第一步 创建一个flutter app(注意:代码中注释开头的数字代表第几步添加的注释)
 
 
 import 'package:flutter/material.dart';
