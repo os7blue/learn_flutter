@@ -1,11 +1,8 @@
-//4步: 创建一个无限滚动ListView
-//在这一步中，您将扩展（继承）RandomWordsState类，以生成并显示单词对列表。
-//当用户滚动时，ListView中显示的列表将无限增长。
-//ListView的builder工厂构造函数允许您按需建立一个懒加载的列表视图。
-
+//第5步: 添加交互
+//在这一步中，您将为每一行添加一个可点击的心形 ❤️ 图标。当用户点击列表中的条目，切换其“收藏”状态时，将该词对添加到或移除出“收藏夹”。
 import 'package:flutter/material.dart';
 
-//和大多数语言的导入对应包的操作差不多 使用import
+//2和大多数语言的导入对应包的操作差不多 使用import
 import 'package:english_words/english_words.dart';
 import 'package:learn_flutter/main.dart';
 
@@ -60,6 +57,10 @@ class RndomWords extends StatefulWidget {
 //3添加 RandomWordsState 类.该应用程序的大部分代码都在该类中， 该类持有RandomWords widget的状态。
 //3这个类将保存随着用户滚动而无限增长的生成的单词对， 以及喜欢的单词对，用户通过重复点击心形 ❤️ 图标来将它们从列表中添加或删除。
 class RandomWordsState extends State<RandomWords> {
+
+  //5添加一个 _saved Set(集合) 到RandomWordsState。这个集合存储用户喜欢（收藏）的单词对。
+  //5在这里，Set比List更合适，因为Set中不允许重复的值。
+  final _saved = new Set<WordPair>();
 
   //4向RandomWordsState类中添加一个_suggestions列表以保存建议的单词对。
   //4该变量以下划线（_）开头，在Dart语言中使用下划线前缀标识符，会强制其变成私有的。
@@ -118,11 +119,32 @@ class RandomWordsState extends State<RandomWords> {
   //4这个函数在ListTile中显示每个新词对，这使您在下一步中可以生成更漂亮的显示行
   //4在RandomWordsState中添加一个_buildRow函数 :
   Widget _buildRow(WordPair pair) {
+
+    //5在 _buildRow 方法中添加 alreadySaved来检查确保单词对还没有添加到收藏夹中。
+    final alreadySaved = _saved.contains(pair);
+
     return new ListTile(
       title: new Text(
         pair.asPascalCase,
         style: _biggerFont,
       ),
+      //5同时在 _buildRow()中， 添加一个心形 ❤️ 图标到 ListTiles以启用收藏功能。接下来，你就可以给心形 ❤️ 图标添加交互能力了。
+      trailing: new Icon(
+        alreadySaved ? Icons.favorite : Icons.favorite_border,
+        color: alreadySaved ? Colors.red : null,
+      ),
+      //5在 _buildRow中让心形❤️图标变得可以点击。
+      //5如果单词条目已经添加到收藏夹中， 再次点击它将其从收藏夹中删除。
+      //5当心形❤️图标被点击时，函数调用setState()通知框架状态已经改变。
+      onTap: () {
+        setState(() {
+          if (alreadySaved) {
+            _saved.remove(pair);
+          } else {
+            _saved.add(pair);
+          }
+        });
+      },
     );
   }
 

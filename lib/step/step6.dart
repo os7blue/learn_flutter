@@ -1,11 +1,12 @@
-//4步: 创建一个无限滚动ListView
-//在这一步中，您将扩展（继承）RandomWordsState类，以生成并显示单词对列表。
-//当用户滚动时，ListView中显示的列表将无限增长。
-//ListView的builder工厂构造函数允许您按需建立一个懒加载的列表视图。
-
+//第6步: 导航到新页面
+//在这一步中，您将添加一个显示收藏夹内容的新页面（在Flutter中称为路由(route)）。
+//您将学习如何在主路由和新路由之间导航（切换页面）。
+//在Flutter中，导航器管理应用程序的路由栈。
+//将路由推入（push）到导航器的栈中，将会显示更新为该路由页面。
+//从导航器的栈中弹出（pop）路由，将显示返回到前一个路由。
 import 'package:flutter/material.dart';
 
-//和大多数语言的导入对应包的操作差不多 使用import
+//2和大多数语言的导入对应包的操作差不多 使用import
 import 'package:english_words/english_words.dart';
 import 'package:learn_flutter/main.dart';
 
@@ -61,6 +62,10 @@ class RndomWords extends StatefulWidget {
 //3这个类将保存随着用户滚动而无限增长的生成的单词对， 以及喜欢的单词对，用户通过重复点击心形 ❤️ 图标来将它们从列表中添加或删除。
 class RandomWordsState extends State<RandomWords> {
 
+  //5添加一个 _saved Set(集合) 到RandomWordsState。这个集合存储用户喜欢（收藏）的单词对。
+  //5在这里，Set比List更合适，因为Set中不允许重复的值。
+  final _saved = new Set<WordPair>();
+
   //4向RandomWordsState类中添加一个_suggestions列表以保存建议的单词对。
   //4该变量以下划线（_）开头，在Dart语言中使用下划线前缀标识符，会强制其变成私有的。
   //4另外，添加一个biggerFont变量来增大字体大小
@@ -81,6 +86,12 @@ class RandomWordsState extends State<RandomWords> {
     return new Scaffold (
       appBar: new AppBar(
         title: new Text('Startup Name Generator'),
+        //6.1在RandomWordsState的build方法中为AppBar添加一个列表图标。
+        //6.1当用户点击列表图标时，包含收藏夹的新路由页面入栈显示。
+        //6.1提示: 某些widget属性需要单个widget（child），而其它一些属性，如action，需要一组widgets(children），用方括号[]表示。
+      actions: <Widget>[
+          new IconButton(icon: new Icon(Icons.list), onPressed: _pushSaved)
+        ],
       ),
       body: _buildSuggestions(),
     );
@@ -118,12 +129,77 @@ class RandomWordsState extends State<RandomWords> {
   //4这个函数在ListTile中显示每个新词对，这使您在下一步中可以生成更漂亮的显示行
   //4在RandomWordsState中添加一个_buildRow函数 :
   Widget _buildRow(WordPair pair) {
+
+    //5在 _buildRow 方法中添加 alreadySaved来检查确保单词对还没有添加到收藏夹中。
+    final alreadySaved = _saved.contains(pair);
+
     return new ListTile(
       title: new Text(
         pair.asPascalCase,
         style: _biggerFont,
       ),
+      //5同时在 _buildRow()中， 添加一个心形 ❤️ 图标到 ListTiles以启用收藏功能。接下来，你就可以给心形 ❤️ 图标添加交互能力了。
+      trailing: new Icon(
+        alreadySaved ? Icons.favorite : Icons.favorite_border,
+        color: alreadySaved ? Colors.red : null,
+      ),
+      //5在 _buildRow中让心形❤️图标变得可以点击。
+      //5如果单词条目已经添加到收藏夹中， 再次点击它将其从收藏夹中删除。
+      //5当心形❤️图标被点击时，函数调用setState()通知框架状态已经改变。
+      onTap: () {
+        setState(() {
+          if (alreadySaved) {
+            _saved.remove(pair);
+          } else {
+            _saved.add(pair);
+          }
+        });
+      },
     );
   }
 
+
+  //6.2向RandomWordsState类添加一个 _pushSaved() 方法.
+  //6.2热重载应用，列表图标将会出现在导航栏中。现在点击它不会有任何反应，因为 _pushSaved 函数还是空的。
+  void _pushSaved() {
+    //6.3当用户点击导航栏中的列表图标时，建立一个路由并将其推入到导航管理器栈中。此操作会切换页面以显示新路由。
+    //6.3新页面的内容在在MaterialPageRoute的builder属性中构建，builder是一个匿名函数。
+    //6.3添加Navigator.push调用，这会使路由入栈（以后路由入栈均指推入到导航管理器的栈)
+    Navigator.of(context).push(
+    //6.4添加MaterialPageRoute及其builder。
+      // 6.4现在，添加生成ListTile行的代码。
+      // 6.4ListTile的divideTiles()方法在每个ListTile之间添加1像素的分割线。
+      // 6.4该 divided 变量持有最终的列表项。
+    new MaterialPageRoute(
+        builder: (context) {
+          final tiles = _saved.map(
+                (pair) {
+              return new ListTile(
+                title: new Text(
+                  pair.asPascalCase,
+                  style: _biggerFont,
+                ),
+              );
+            },
+          );
+          final divided = ListTile
+              .divideTiles(
+            context: context,
+            tiles: tiles,
+          )
+              .toList();
+
+          //6.5builder返回一个Scaffold，其中包含名为“Saved Suggestions”的新路由的应用栏。
+          //6.5新路由的body由包含ListTiles行的ListView组成;
+          //6.5每行之间通过一个分隔线分隔。
+          return new Scaffold(
+            appBar: new AppBar(
+              title: new Text('Saved Suggestions'),
+            ),
+            body: new ListView(children: divided),
+          );
+        },
+      ),
+    );
+  }
 }
